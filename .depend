@@ -137,6 +137,8 @@ typing/printtyped.cmi : typing/typedtree.cmi
 typing/stypes.cmi : typing/typedtree.cmi parsing/location.cmi \
     typing/annot.cmi
 typing/subst.cmi : typing/types.cmi typing/path.cmi typing/ident.cmi
+typing/tast_mapper.cmi : typing/typedtree.cmi typing/env.cmi \
+    parsing/asttypes.cmi
 typing/typeclass.cmi : typing/types.cmi typing/typedtree.cmi \
     parsing/parsetree.cmi parsing/longident.cmi parsing/location.cmi \
     typing/ident.cmi typing/env.cmi typing/ctype.cmi parsing/asttypes.cmi
@@ -296,6 +298,10 @@ typing/subst.cmo : typing/types.cmi utils/tbl.cmi typing/path.cmi \
 typing/subst.cmx : typing/types.cmx utils/tbl.cmx typing/path.cmx \
     utils/misc.cmx parsing/location.cmx typing/ident.cmx utils/clflags.cmx \
     typing/btype.cmx parsing/ast_mapper.cmx typing/subst.cmi
+typing/tast_mapper.cmo : typing/typedtree.cmi typing/env.cmi \
+    parsing/asttypes.cmi typing/tast_mapper.cmi
+typing/tast_mapper.cmx : typing/typedtree.cmx typing/env.cmx \
+    parsing/asttypes.cmi typing/tast_mapper.cmi
 typing/typeclass.cmo : utils/warnings.cmi typing/typetexp.cmi \
     typing/types.cmi typing/typedtree.cmi typing/typedecl.cmi \
     typing/typecore.cmi parsing/syntaxerr.cmi typing/subst.cmi \
