@@ -352,3 +352,51 @@ let split s c =
 let cut_at s c =
   let pos = String.index s c in
   String.sub s 0 pos, String.sub s (pos+1) (String.length s - pos - 1)
+
+type hook_info = {
+  sourcefile : string;
+}
+
+type exn_wrapper_t =
+    {
+      error: exn;
+      hook_name: string;
+      hook_info: hook_info;
+    }
+exception HookExnWrapper of exn_wrapper_t
+
+exception HookExn of exn
+
+let raise_direct_hook_exn e = raise (HookExn e)
+
+let fold_hooks list hook_info ast =
+  List.fold_left (fun ast (hook_name,f) ->
+    try
+      f hook_info ast
+    with
+    | HookExn e -> raise e
+    | error -> raise (HookExnWrapper {error; hook_name; hook_info})
+       (* when explicit reraise with backtrace will be available,
+          it should be used here *)
+
+  ) ast (List.sort compare list)
+
+module type HookSig = sig
+  type t
+
+  val add_hook : string -> (hook_info -> t -> t) -> unit
+  val apply_hooks : hook_info -> t -> t
+end
+
+module MakeHooks(M: sig
+    type t
+  end) : HookSig with type t = M.t
+= struct
+
+  type t = M.t
+
+  let hooks = ref []
+  let add_hook name f = hooks := (name, f) :: !hooks
+  let apply_hooks sourcefile intf =
+    fold_hooks !hooks sourcefile intf
+end

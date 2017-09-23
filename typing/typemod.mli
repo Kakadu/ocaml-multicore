@@ -75,3 +75,8 @@ exception Error of Location.t * Env.t * error
 exception Error_forward of Location.error
 
 val report_error: Env.t -> formatter -> error -> unit
+
+module ImplementationHooks : Misc.HookSig
+  with type t = Typedtree.structure * Typedtree.module_coercion
+module InterfaceHooks : Misc.HookSig
+  with type t = Typedtree.signature
