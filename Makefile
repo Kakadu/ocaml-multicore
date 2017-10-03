@@ -69,8 +69,12 @@ COMP=bytecomp/lambda.cmo bytecomp/printlambda.cmo \
   bytecomp/translobj.cmo bytecomp/translcore.cmo \
   bytecomp/translclass.cmo bytecomp/translmod.cmo \
   bytecomp/simplif.cmo bytecomp/runtimedef.cmo \
+	bytecomp/opcodes.cmo \
+  bytecomp/bytesections.cmo bytecomp/dll.cmo \
+  bytecomp/symtable.cmo \
   driver/pparse.cmo driver/main_args.cmo \
-  driver/compenv.cmo driver/compmisc.cmo
+  driver/compenv.cmo driver/compmisc.cmo \
+	driver/compdynlink.cmo driver/compplugin.cmo
 
 COMMON=$(UTILS) $(PARSING) $(TYPING) $(COMP)
 
@@ -78,6 +82,8 @@ BYTECOMP=bytecomp/meta.cmo bytecomp/instruct.cmo bytecomp/bytegen.cmo \
   bytecomp/printinstr.cmo bytecomp/opcodes.cmo bytecomp/emitcode.cmo \
   bytecomp/bytesections.cmo bytecomp/dll.cmo bytecomp/symtable.cmo \
   bytecomp/bytelink.cmo bytecomp/bytelibrarian.cmo bytecomp/bytepackager.cmo \
+	bytecomp/symtable.cmo \
+	driver/compplugin.cmo \
   driver/errors.cmo driver/compile.cmo
 
 ASMCOMP=asmcomp/arch.cmo asmcomp/debuginfo.cmo \
@@ -437,6 +443,18 @@ ocamlnat: ocamlopt otherlibs/dynlink/dynlink.cmxa $(NATTOPOBJS:.cmo=.cmx)
 
 toplevel/opttoploop.cmx: otherlibs/dynlink/dynlink.cmxa
 
+bytecomp/opcodes.ml: byterun/caml/instruct.h tools/make_opcodes
+	$(CAMLRUN) tools/make_opcodes -opcodes < $< > $@
+
+tools/make_opcodes: tools/make_opcodes.mll
+	$(MAKE) -C tools make_opcodes
+
+partialclean::
+	rm -f bytecomp/opcodes.ml
+
+beforedepend:: bytecomp/opcodes.ml
+
+
 otherlibs/dynlink/dynlink.cmxa: otherlibs/dynlink/natdynlink.ml
 	cd otherlibs/dynlink && $(MAKE) allopt
 
@@ -545,17 +563,6 @@ partialclean::
 	rm -f ocamlopt.opt
 
 $(COMMON:.cmo=.cmx) $(BYTECOMP:.cmo=.cmx) $(ASMCOMP:.cmo=.cmx): ocamlopt
-
-# The numeric opcodes
-
-bytecomp/opcodes.ml: byterun/caml/instruct.h
-	sed -n -e '/^enum/p' -e 's/,//g' -e '/^  /p' byterun/caml/instruct.h | \
-	awk -f tools/make-opcodes > bytecomp/opcodes.ml
-
-partialclean::
-	rm -f bytecomp/opcodes.ml
-
-beforedepend:: bytecomp/opcodes.ml
 
 # The predefined exceptions and primitives
 
@@ -736,6 +743,39 @@ partialclean::
 alldepend::
 	cd tools; $(MAKE) depend
 
+# Compiler Plugins
+
+DYNLINK_DIR=otherlibs/dynlink
+
+driver/compdynlink.mlbyte: $(DYNLINK_DIR)/dynlink.ml driver/compdynlink.mli
+	grep -v 'REMOVE_ME for ../../debugger/dynlink.ml' \
+	     $(DYNLINK_DIR)/dynlink.ml >driver/compdynlink.mlbyte
+
+ifeq ($(NATDYNLINK),true)
+driver/compdynlink.mlopt: $(DYNLINK_DIR)/natdynlink.ml driver/compdynlink.mli
+	cp $(DYNLINK_DIR)/natdynlink.ml driver/compdynlink.mlopt
+else
+driver/compdynlink.mlopt: driver/compdynlink.mlno driver/compdynlink.mli
+	cp driver/compdynlink.mlno driver/compdynlink.mlopt
+endif
+
+driver/compdynlink.mli: $(DYNLINK_DIR)/dynlink.mli
+	cp $(DYNLINK_DIR)/dynlink.mli driver/compdynlink.mli
+
+driver/compdynlink.cmo: driver/compdynlink.mlbyte driver/compdynlink.cmi
+	$(CAMLC) $(COMPFLAGS) -c -impl $<
+
+driver/compdynlink.cmx: driver/compdynlink.mlopt driver/compdynlink.cmi
+	$(CAMLOPT) $(COMPFLAGS) -c -impl $<
+
+beforedepend:: driver/compdynlink.mlbyte driver/compdynlink.mlopt \
+               driver/compdynlink.mli
+partialclean::
+	rm -f driver/compdynlink.mlbyte
+	rm -f driver/compdynlink.mli
+	rm -f driver/compdynlink.mlopt
+
+
 # OCamldoc
 
 ocamldoc: ocamlc ocamlyacc ocamllex otherlibraries
@@ -851,6 +891,10 @@ depend: beforedepend
 	(for d in utils parsing typing bytecomp asmcomp driver toplevel; \
 	 do $(CAMLDEP) $(DEPFLAGS) $$d/*.mli $$d/*.ml; \
 	 done) > .depend
+	$(CAMLDEP) -slash $(DEPFLAGS) \
+			-impl driver/compdynlink.mlopt >> .depend
+	$(CAMLDEP) -slash $(DEPFLAGS) \
+			-impl driver/compdynlink.mlbyte >> .depend
 
 alldepend:: depend
 

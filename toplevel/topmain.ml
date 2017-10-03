@@ -77,6 +77,7 @@ module Options = Main_args.Make_bytetop_options (struct
   let _nostdlib = set no_std_include
   let _open s = open_modules := s :: !open_modules
   let _ppx s = first_ppx := s :: !first_ppx
+  let _plugin p = Compplugin.load p
   let _principal = set principal
   let _rectypes = set recursive_types
   let _safe_string = clear unsafe_string

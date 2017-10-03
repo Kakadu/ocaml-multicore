@@ -137,6 +137,10 @@ let setter ppf f name options s =
       (Warnings.Bad_env_variable ("OCAMLPARAM",
                                   Printf.sprintf "bad value for %s" name))
 
+
+let load_plugin = ref (fun _ -> ())
+
+
 (* 'can-discard=' specifies which arguments can be discarded without warning
    because they are not understood by some versions of OCaml. *)
 let can_discard = ref []
@@ -272,6 +276,7 @@ let read_OCAMLPARAM ppf position =
       | "can-discard" ->
         can_discard := v ::!can_discard
 
+      | "plugin" -> !load_plugin v
       | _ ->
         if not (List.mem name !can_discard) then begin
           can_discard := name :: !can_discard;

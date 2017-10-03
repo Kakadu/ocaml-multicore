@@ -884,6 +884,13 @@ asmcomp/strmatch.cmx : bytecomp/lambda.cmx typing/ident.cmx asmcomp/cmm.cmx \
 driver/compenv.cmi :
 driver/compile.cmi :
 driver/compmisc.cmi : typing/env.cmi
+driver/compplugin.cmo : utils/misc.cmi parsing/location.cmi utils/config.cmi \
+    driver/compmisc.cmi driver/compenv.cmi driver/compdynlink.cmi \
+    utils/clflags.cmi driver/compplugin.cmi
+driver/compplugin.cmx : utils/misc.cmx parsing/location.cmx utils/config.cmx \
+    driver/compmisc.cmx driver/compenv.cmx driver/compdynlink.cmi \
+    utils/clflags.cmx driver/compplugin.cmi
+driver/compplugin.cmi :
 driver/errors.cmi :
 driver/main.cmi :
 driver/main_args.cmi :

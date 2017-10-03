@@ -113,6 +113,7 @@ module Options = Main_args.Make_bytecomp_options (struct
   let _pack = set make_package
   let _pp s = preprocessor := Some s
   let _ppx s = first_ppx := s :: !first_ppx
+  let _plugin p = Compplugin.load p
   let _principal = set principal
   let _rectypes = set recursive_types
   let _runtime_variant s = runtime_variant := s
@@ -200,7 +201,3 @@ let main () =
     exit 2
 
 let _ = main ()
-
-
-
-
