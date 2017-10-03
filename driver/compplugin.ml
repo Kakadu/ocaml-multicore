@@ -17,7 +17,7 @@
 let plugins = Hashtbl.create 13
 
 let load plugin_name =
-
+  Printf.printf "Compplugin.load %s" plugin_name;
   let plugin_name =
     try
       Compdynlink.adapt_filename plugin_name

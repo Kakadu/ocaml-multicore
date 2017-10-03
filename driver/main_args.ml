@@ -253,6 +253,11 @@ let mk_ppx f =
   "<command>  Pipe abstract syntax trees through preprocessor <command>"
 ;;
 
+let mk_plugin f =
+  "-plugin", Arg.String f,
+  "<plugin>  Load dynamic plugin <plugin>"
+;;
+
 let mk_principal f =
   "-principal", Arg.Unit f, " Check principality of type inference"
 ;;
@@ -541,6 +546,7 @@ module type Compiler_options = sig
   val _output_obj : unit -> unit
   val _output_complete_obj : unit -> unit
   val _pack : unit -> unit
+  val _plugin : string -> unit
   val _pp : string -> unit
   val _principal : unit -> unit
   val _rectypes : unit -> unit
@@ -696,6 +702,7 @@ struct
     mk_pack_byt F._pack;
     mk_pp F._pp;
     mk_ppx F._ppx;
+    mk_plugin F._plugin;
     mk_principal F._principal;
     mk_rectypes F._rectypes;
     mk_runtime_variant F._runtime_variant;
@@ -812,6 +819,7 @@ struct
     mk_output_complete_obj F._output_complete_obj;
     mk_p F._p;
     mk_pack_opt F._pack;
+    mk_plugin F._plugin;
     mk_pp F._pp;
     mk_ppx F._ppx;
     mk_principal F._principal;
