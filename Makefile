@@ -82,7 +82,6 @@ BYTECOMP=bytecomp/meta.cmo bytecomp/instruct.cmo bytecomp/bytegen.cmo \
   bytecomp/printinstr.cmo bytecomp/opcodes.cmo bytecomp/emitcode.cmo \
   bytecomp/bytesections.cmo bytecomp/dll.cmo bytecomp/symtable.cmo \
   bytecomp/bytelink.cmo bytecomp/bytelibrarian.cmo bytecomp/bytepackager.cmo \
-	bytecomp/symtable.cmo \
 	driver/compplugin.cmo \
   driver/errors.cmo driver/compile.cmo
 
